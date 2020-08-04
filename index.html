@@ -5,6 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rock Paper Scissors Game</title>
     <script>
+        let counter = {
+            roundCount: 0,
+            playerScore: 0,
+            computerScore: 0
+        }
         //Function to return rock paper or scissors randomly. This will
         //be used as an AI to play against. 
         function computerPlay()
@@ -54,53 +59,133 @@
             return outcome;
         }
         //Main game function
-        function game()
+        function game(userButtonSelect)
         {
-            let roundCount = 0;
-            let playerScore = 0;
-            let computerScore = 0;
-            while(roundCount < 5)
+            counter.roundCount++;
+            if(counter.roundCount < 5)
             {
-                roundCount++;
-                //Set each selection into a constant
-                let playerSelection = userPlay();
-                let computerSelection = computerPlay();
-                switch(playRound(playerSelection, computerSelection))
-                {
-                    case "Draw":
-                        console.log("Player chose " + playerSelection + ", Computer chose " + computerSelection + ". Draw.");
-                        break;
-                    case "Player":
-                        console.log("Player chose " + playerSelection + ", Computer chose " + computerSelection + ". Player wins.");
-                        playerScore++;
-                        break;
-                    case "Computer":
-                        console.log("Player chose " + playerSelection + ", Computer chose " + computerSelection + ". Computer wins.");
-                        computerScore++;
-                        break;
-                }
-                console.log("After round " + roundCount + ", Player is on " + playerScore + " points, computer is on " + computerScore + " points.")
+                roundHeading(counter.roundCount+1);
             }
-            console.log("Final scores.... Player: " + playerScore + " Computer: " + computerScore);
-            if(playerScore > computerScore)
+            //Set each selection into a constant
+            let playerSelection = userButtonSelect;
+            let computerSelection = computerPlay();
+            let gamelog;
+            switch(playRound(playerSelection, computerSelection))
             {
-                console.log("Player wins!");
+                case "Draw":
+                    gamelog = "DRAW. Player chose " + playerSelection + ", Computer chose " + computerSelection + ".\n";
+                    break;
+                case "Player":
+                    gamelog = "PLAYER WINS! Player chose " + playerSelection + ", Computer chose " + computerSelection + ".\n";
+                    counter.playerScore++;
+                    playerScoredPoint(counter.playerScore);
+                    break;
+                case "Computer":
+                    gamelog = "COMPUTER WINS. Player chose " + playerSelection + ", Computer chose " + computerSelection + ".\n";
+                    counter.computerScore++;
+                    computerScoredPoint(counter.computerScore);
+                    break;
             }
-            else if(playerScore < computerScore)
+            gamelog += "After round " + counter.roundCount + ", Player is on " + counter.playerScore + " points, computer is on " + counter.computerScore + " points.";
+            addGameLog(gamelog);
+            if(counter.roundCount >= 5)
             {
-                console.log("Computer wins!");
-            }
-            else
-            {
-                console.log("It's a draw!");
+                gamelog = "Final scores.... Player: " + counter.playerScore + " Computer: " + counter.computerScore;
+                addGameLog(gamelog);
+                disableButtons();
+                createRestartButton();
             }
         }
-
-        game();
         
     </script>
 </head>
 <body>
-    
+    <div id="scores">
+        <div id="playerScore">Player Score: <span id="playerScoreValue">0</span></div>
+        <div id="computerScore">Computer Score: <span id="computerScoreValue">0</span></div>
+    </div>
+    <br>
+    <div class="buttonContainer">
+        <div id="roundContainer">Round 1</div>
+        <button id="rock" class="btnChoice">Rock</button>
+        <button id="paper" class="btnChoice">Paper</button>
+        <button id="scissors" class="btnChoice">Scissors</button>
+    </div>
+    <div id="gamelogContainer">
+
+    </div>
 </body>
 </html>
+
+<script>
+
+let constants = {
+    buttons: document.querySelectorAll('button'),
+    buttonContainer: document.querySelector('.buttonContainer'),
+    logContainer: document.querySelector('#gamelogContainer')
+}
+
+let roundHeading = (roundTotal) => {
+    let roundContainer = document.querySelector('#roundContainer');
+    roundContainer.textContent = "Round " + roundTotal;
+}
+
+let playerScoredPoint = (pScore) => {
+    let playerScoreVal = document.querySelector('#playerScoreValue');
+    playerScoreVal.textContent = pScore;
+}
+
+let computerScoredPoint = (cScore) => {
+    let computerScoreVal = document.querySelector('#computerScoreValue');
+    computerScoreVal.textContent = cScore;
+}
+
+let addGameLog = (gamelog) => {
+    const log = document.createElement('p');
+    log.classList.add('gamelog');
+    log.setAttribute('style', 'background: WhiteSmoke;');
+    log.textContent = gamelog;
+    constants.logContainer.appendChild(log);
+}
+
+let disableButtons = () => {
+    constants.buttons.forEach((button) => {
+        button.disabled = true;
+    });
+}
+
+//Create the refresh button and add to the list of buttons.
+let createRestartButton = () => {
+    const restartBtn = document.createElement('button');
+    restartBtn.id = "restartButtonId";
+    restartBtn.textContent = "Restart";
+    constants.buttonContainer.appendChild(restartBtn);
+    let restartButton = document.querySelector("#restartButtonId");
+    restartButton.addEventListener('click', function (e) {
+        generateRestart()
+    });
+}
+
+//Refreshes scores and enables buttons again and removes restart button
+let generateRestart = () => {
+    roundHeading(1);
+    playerScoredPoint(0);
+    computerScoredPoint(0);
+    counter.roundCount = 0;
+    counter.computerScore = 0;
+    counter.playerScore = 0;
+    constants.logContainer.innerHTML = "";
+    constants.buttons.forEach((button) => {
+        button.disabled = false;
+    });
+    let restartButton = document.querySelector("#restartButtonId");
+    restartButton.parentNode.removeChild(restartButton);
+}
+
+// we use the .forEach method to iterate through each button and add an event
+constants.buttons.forEach((button) => {
+  button.addEventListener('click', function (e) {
+    game(e.target.id);
+  });
+});
+</script>
